@@ -13,5 +13,8 @@ func main() {
     d["cow"] = "moo"
     d["spam"] = "eggs"
     d["spammy"] = l
-    fmt.Println(bencode.Encode(d))
+
+    bc := bencode.Encode(d)
+    fmt.Println(bc)
+    fmt.Println(bencode.Decode(bc))
 }
