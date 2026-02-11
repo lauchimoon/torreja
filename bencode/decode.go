@@ -14,7 +14,7 @@ type decoder struct {
 func Decode(bc string) (map[string]interface{}, error) {
     d := &decoder{bc, 0}
     if b, err := d.readByte(); err != nil {
-        return make(map[string]interface{}), nil
+        return make(map[string]interface{}), err
     } else if b != 'd' {
         return make(map[string]interface{}),
                 errors.New("failed to read dictionary.")
