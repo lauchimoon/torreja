@@ -11,12 +11,12 @@ type decoder struct {
     cursor int
 }
 
-func Decode(bc string) (map[string]interface{}, error) {
+func Decode(bc string) (map[string]any, error) {
     d := &decoder{bc, 0}
     if b, err := d.readByte(); err != nil {
-        return make(map[string]interface{}), err
+        return make(map[string]any), err
     } else if b != 'd' {
-        return make(map[string]interface{}),
+        return make(map[string]any),
                 errors.New("failed to read dictionary.")
     }
     return d.readDict()
@@ -39,8 +39,8 @@ func (d *decoder) unreadByte() error {
     return nil
 }
 
-func (d *decoder) readDict() (map[string]interface{}, error) {
-    dict := make(map[string]interface{})
+func (d *decoder) readDict() (map[string]any, error) {
+    dict := make(map[string]any)
     for {
         key, err := d.readString()
         if err != nil {
@@ -91,7 +91,7 @@ func (d *decoder) readString() (string, error) {
     return s.String(), nil
 }
 
-func (d *decoder) readIntUntil(c byte) (interface{}, error) {
+func (d *decoder) readIntUntil(c byte) (any, error) {
     b, err := d.readByte()
     if err != nil {
         return nil, err
@@ -114,7 +114,7 @@ func (d *decoder) readIntUntil(c byte) (interface{}, error) {
     return nil, err
 }
 
-func (d *decoder) readValue() (v interface{}, err error) {
+func (d *decoder) readValue() (v any, err error) {
     typ, err := d.readByte()
     if err != nil {
         return nil, err
@@ -139,12 +139,12 @@ func (d *decoder) readValue() (v interface{}, err error) {
     return v, err
 }
 
-func (d *decoder) readInt() (interface{}, error) {
+func (d *decoder) readInt() (any, error) {
     return d.readIntUntil('e')
 }
 
-func (d *decoder) readList() ([]interface{}, error) {
-    var l []interface{}
+func (d *decoder) readList() ([]any, error) {
+    var l []any
     for {
         v, err := d.readValue()
         if err != nil {

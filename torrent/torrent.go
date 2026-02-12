@@ -69,7 +69,7 @@ func New(torrentFilePath string) (*Metainfo, error) {
     return &metainfo, nil
 }
 
-func getField[T interface{}](decoded map[string]interface{}, field string, target *T) {
+func getField[T any](decoded map[string]any, field string, target *T) {
     if v, ok := decoded[field]; ok {
         if typedVal, ok := v.(T); ok {
             *target = typedVal
@@ -77,14 +77,14 @@ func getField[T interface{}](decoded map[string]interface{}, field string, targe
     }
 }
 
-func getAnnounceList(decoded map[string]interface{}) []string {
+func getAnnounceList(decoded map[string]any) []string {
     announceList := []string{}
-    list, ok := decoded["announce-list"].([]interface{})
+    list, ok := decoded["announce-list"].([]any)
     if !ok {
         return nil
     }
     for _, elem := range list {
-        tracker := elem.([]interface{})[0].(string)
+        tracker := elem.([]any)[0].(string)
         announceList = append(announceList, tracker)
     }
     return announceList
