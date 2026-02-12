@@ -44,11 +44,14 @@ func New(torrentFilePath string) (*Metainfo, error) {
     }
 
     metainfo := Metainfo{}
-    announce, ok := decoded["announce"].(string)
+    announce, ok := decoded["announce"]
     if !ok {
-        return nil, errors.New("no 'announce' found")
+        return nil, errors.New("no 'announce' found.")
     }
-    metainfo.Announce = announce
+    metainfo.Announce, ok = announce.(string)
+    if !ok {
+        return nil, errors.New("failed to parse 'announce' as string.")
+    }
 
     // optional fields:
     // announce-list
@@ -57,27 +60,21 @@ func New(torrentFilePath string) (*Metainfo, error) {
     // created by
     // encoding
     // If they're not found, there's no problem.
-    announceList := getAnnounceList(decoded)
-    metainfo.AnnounceList = announceList
-
-    creationDate, ok := decoded["creation date"]
-    if ok {
-        metainfo.CreationDate = creationDate.(int64)
-    }
-    comment, ok := decoded["comment"]
-    if ok {
-        metainfo.Comment = comment.(string)
-    }
-    createdBy, ok := decoded["created by"]
-    if ok {
-        metainfo.CreatedBy = createdBy.(string)
-    }
-    encoding, ok := decoded["encoding"]
-    if ok {
-        metainfo.Encoding = encoding.(string)
-    }
+    metainfo.AnnounceList = getAnnounceList(decoded)
+    getField(decoded, "creation date", &metainfo.CreationDate)
+    getField(decoded, "comment", &metainfo.Comment)
+    getField(decoded, "created by", &metainfo.CreatedBy)
+    getField(decoded, "encoding", &metainfo.Encoding)
 
     return &metainfo, nil
+}
+
+func getField[T interface{}](decoded map[string]interface{}, field string, target *T) {
+    if v, ok := decoded[field]; ok {
+        if typedVal, ok := v.(T); ok {
+            *target = typedVal
+        }
+    }
 }
 
 func getAnnounceList(decoded map[string]interface{}) []string {
