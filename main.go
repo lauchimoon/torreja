@@ -2,19 +2,20 @@ package main
 
 import (
     "fmt"
-    "github.com/lauchimoon/torreja/bencode"
+    "os"
+    "github.com/lauchimoon/torreja/torrent"
 )
 
 func main() {
-    var l []interface{}
-    l = append(l, "a")
-    l = append(l, "b")
-    d := make(map[string]interface{})
-    d["cow"] = "moo"
-    d["spam"] = "eggs"
-    d["spammy"] = l
+    torr, err := torrent.New(os.Args[1])
+    if err != nil {
+        panic(err)
+    }
 
-    bc := bencode.Encode(d)
-    fmt.Println(bc)
-    fmt.Println(bencode.Decode(bc))
+    fmt.Println("Announce:", torr.Announce)
+    fmt.Println("Announce list:", torr.AnnounceList)
+    fmt.Println("Creation date (UNIX timestamp):", torr.CreationDate)
+    fmt.Printf("Comment: '%s'\n", torr.Comment)
+    fmt.Printf("Created by: '%s'\n", torr.CreatedBy)
+    fmt.Printf("Encoding: '%s'\n", torr.Encoding)
 }
