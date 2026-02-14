@@ -1,8 +1,9 @@
 package torrent
 
 import (
+    "encoding/hex"
     "errors"
-//    "fmt"
+    //"fmt"
     "os"
     "strings"
     "github.com/lauchimoon/torreja/bencode"
@@ -19,7 +20,7 @@ type file struct {
     Path string
 }
 
-type hash [20]byte
+type hash string
 
 type info struct {
     PieceLength int64
@@ -158,7 +159,22 @@ func getInfo(decoded map[string]any) (info, error) {
 }
 
 func parsePieces(pieces any) ([]hash, error) {
-    return nil, nil
+    str, ok := pieces.(string)
+    if !ok {
+        return nil, errors.New("could not parse pieces as a string")
+    }
+    piecesSlice := []byte(str)
+    piecesSize := len(piecesSlice)
+    if piecesSize % 20 != 0 {
+        return nil, errors.New("size of pieces string must be a multiple of 20")
+    }
+
+    hashes := []hash{}
+    for i := 0; i < piecesSize; i += 20 {
+        chunk := piecesSlice[i:i+20]
+        hashes = append(hashes, hash(hex.EncodeToString(chunk)))
+    }
+    return hashes, nil
 }
 
 func getFiles(data map[string]any, mode int, name string) ([]file, error) {
