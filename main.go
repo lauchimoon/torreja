@@ -18,4 +18,10 @@ func main() {
     fmt.Printf("Comment: '%s'\n", torr.Comment)
     fmt.Printf("Created by: '%s'\n", torr.CreatedBy)
     fmt.Printf("Encoding: '%s'\n", torr.Encoding)
+
+    fmt.Printf("\nName: '%s'\n", torr.Info.Name)
+    fmt.Println("Piece length:", torr.Info.PieceLength)
+    fmt.Printf("Pieces: %v\n", torr.Info.Pieces)
+    fmt.Println("Private:", torr.Info.Private)
+    fmt.Println("Files:", torr.Info.Files)
 }

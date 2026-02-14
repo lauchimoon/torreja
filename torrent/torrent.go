@@ -2,8 +2,14 @@ package torrent
 
 import (
     "errors"
+//    "fmt"
     "os"
     "github.com/lauchimoon/torreja/bencode"
+)
+
+const (
+    modeSingleFile = iota
+    modeMultiFile
 )
 
 type file struct {
@@ -66,6 +72,12 @@ func New(torrentFilePath string) (*Metainfo, error) {
     getField(decoded, "created by", &metainfo.CreatedBy)
     getField(decoded, "encoding", &metainfo.Encoding)
 
+    data, err := getInfo(decoded)
+    if err != nil {
+        return nil, err
+    }
+    metainfo.Info = data
+
     return &metainfo, nil
 }
 
@@ -88,4 +100,62 @@ func getAnnounceList(decoded map[string]any) []string {
         announceList = append(announceList, tracker)
     }
     return announceList
+}
+
+func getInfo(decoded map[string]any) (info, error) {
+    i := info{}
+    dataRaw, ok := decoded["info"]
+    if !ok {
+        return info{}, errors.New("no 'info' dictionary found")
+    }
+    data, ok := dataRaw.(map[string]any)
+    if !ok {
+        return info{}, errors.New("failed to parse 'info' dictionary")
+    }
+
+    name, ok := data["name"]
+    if !ok {
+        return info{}, errors.New("failed to get name of file/output directory")
+    }
+    i.Name, ok = name.(string)
+    if !ok {
+        return info{}, errors.New("failed to parse name as string")
+    }
+
+    pieceLength, ok := data["piece length"]
+    if !ok {
+        return info{}, errors.New("failed to get piece length")
+    }
+    i.PieceLength, ok = pieceLength.(int64)
+    if !ok {
+        return info{}, errors.New("failed to parse piece length as int64")
+    }
+
+    getField(data, "private", &i.Private)
+    pieces, ok := data["pieces"]
+    if !ok {
+        return info{}, errors.New("failed to get pieces")
+    }
+    hashes, err := parsePieces(pieces)
+    if err != nil {
+        return info{}, err
+    }
+    i.Pieces = hashes
+
+    mode := modeMultiFile
+    _, ok = data["files"]
+    if !ok {
+        mode = modeSingleFile
+    }
+
+    i.Files, err = getFiles(data, mode)
+    return i, nil
+}
+
+func parsePieces(pieces any) ([]hash, error) {
+    return nil, nil
+}
+
+func getFiles(data map[string]any, mode int) ([]map[string]file, error) {
+    return nil, nil
 }
