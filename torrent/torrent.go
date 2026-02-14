@@ -4,6 +4,7 @@ import (
     "errors"
 //    "fmt"
     "os"
+    "strings"
     "github.com/lauchimoon/torreja/bencode"
 )
 
@@ -15,7 +16,7 @@ const (
 type file struct {
     Length int64
     MD5Sum string
-    Path []string
+    Path string
 }
 
 type hash [20]byte
@@ -26,7 +27,7 @@ type info struct {
     Private int64
 
     Name string
-    Files []map[string]file
+    Files []file
 }
 
 type Metainfo struct {
@@ -113,15 +114,6 @@ func getInfo(decoded map[string]any) (info, error) {
         return info{}, errors.New("failed to parse 'info' dictionary")
     }
 
-    name, ok := data["name"]
-    if !ok {
-        return info{}, errors.New("failed to get name of file/output directory")
-    }
-    i.Name, ok = name.(string)
-    if !ok {
-        return info{}, errors.New("failed to parse name as string")
-    }
-
     pieceLength, ok := data["piece length"]
     if !ok {
         return info{}, errors.New("failed to get piece length")
@@ -148,7 +140,20 @@ func getInfo(decoded map[string]any) (info, error) {
         mode = modeSingleFile
     }
 
-    i.Files, err = getFiles(data, mode)
+    name, ok := data["name"]
+    if !ok {
+        return info{}, errors.New("failed to get name of file")
+    }
+    i.Name, ok = name.(string)
+    if !ok {
+        return info{}, errors.New("failed to parse name as string")
+    }
+
+    i.Files, err = getFiles(data, mode, i.Name)
+    if err != nil {
+        return info{}, err
+    }
+
     return i, nil
 }
 
@@ -156,6 +161,80 @@ func parsePieces(pieces any) ([]hash, error) {
     return nil, nil
 }
 
-func getFiles(data map[string]any, mode int) ([]map[string]file, error) {
-    return nil, nil
+func getFiles(data map[string]any, mode int, name string) ([]file, error) {
+    if mode == modeSingleFile {
+        f, err := getSingleFile(data, name)
+        return f, err
+    }
+
+    files, err := getMultiFile(data)
+    return files, err
+}
+
+func getSingleFile(data map[string]any, name string) ([]file, error) {
+    f := file{}
+    lengthRaw, ok := data["length"]
+    if !ok {
+        return nil, errors.New("failed to find file length")
+    }
+    length, ok := lengthRaw.(int64)
+    if !ok {
+        return nil, errors.New("failed to parse file length as int64")
+    }
+    getField(data, "md5sum", &f.MD5Sum)
+    f.Length = length
+    f.Path = name
+    return []file{f}, nil
+}
+
+func getMultiFile(data map[string]any) ([]file, error) {
+    files := []file{}
+
+    // We already made sure it exists in getInfo
+    filesRaw, ok := data["files"].([]any)
+    if !ok {
+        return nil, errors.New("failed to parse as list of files")
+    }
+
+    for _, elem := range filesRaw {
+        fRaw, ok := elem.(map[string]any)
+        if !ok {
+            return nil, errors.New("failed to parse file")
+        }
+        lengthRaw, ok := fRaw["length"]
+        if !ok {
+            return nil, errors.New("failed to find file length")
+        }
+        length, ok := lengthRaw.(int64)
+        if !ok {
+            return nil, errors.New("failed to parse file length as int64")
+        }
+
+        pathListRaw, ok := fRaw["path"]
+        if !ok {
+            return nil, errors.New("failed to find file path")
+        }
+        parts, ok := pathListRaw.([]any)
+        if !ok {
+            return nil, errors.New("failed to parse file path as []string")
+        }
+
+        pathList := []string{}
+        for _, part := range parts {
+            p, ok := part.(string)
+            if !ok {
+                return nil, errors.New("failed to parse part of file path as string")
+            }
+            pathList = append(pathList, p)
+        }
+
+        path := strings.Join(pathList, "/")
+        f := file{}
+        f.Length = length
+        f.Path = path
+        getField(fRaw, "md5sum", &f.MD5Sum)
+        files = append(files, f)
+    }
+
+    return files, nil
 }
