@@ -3,7 +3,6 @@ package torrent
 import (
     "encoding/hex"
     "errors"
-    //"fmt"
     "os"
     "strings"
     "github.com/lauchimoon/torreja/bencode"
