@@ -7,15 +7,15 @@ import (
 )
 
 const (
-    MessageIdChoke = iota
-    MessageIdUnchoke
-    MessageIdInterested
-    MessageIdNotInterested
-    MessageIdHave
-    MessageIdBitfield
-    MessageIdRequest
-    MessageIdPiece
-    MessageIdCancel
+    IdChoke = iota
+    IdUnchoke
+    IdInterested
+    IdNotInterested
+    IdHave
+    IdBitfield
+    IdRequest
+    IdPiece
+    IdCancel
 )
 
 type Message struct {
