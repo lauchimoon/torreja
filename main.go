@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "github.com/lauchimoon/torreja/torrent"
+    "github.com/lauchimoon/torreja/client"
 )
 
 func main() {
@@ -29,4 +30,9 @@ func main() {
         panic(err)
     }
     fmt.Println("Peers found:", peerList)
+
+    _, err = client.New(peerList[0], "something1something1", torr.InfoHash)
+    if err != nil {
+        panic(err)
+    }
 }
