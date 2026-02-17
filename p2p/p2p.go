@@ -171,11 +171,16 @@ func (p *pieceProgress) readMessage() error {
     if err != nil {
         return err
     }
+
+    if msg == nil {
+        return nil
+    }
+
     switch msg.Id {
-    case message.IdChoke:
-        p.client.Choked = true
     case message.IdUnchoke:
         p.client.Choked = false
+    case message.IdChoke:
+        p.client.Choked = true
     case message.IdHave:
         idx, err := message.ParseHave(msg)
         if err != nil {

@@ -86,13 +86,13 @@ func (c *Client) Read() (*message.Message, error) {
 }
 
 func (c *Client) SendUnchoked() error {
-    msg := &message.Message{Id: message.IdUnchoke}
+    msg := message.Message{Id: message.IdUnchoke}
     _, err := c.Conn.Write(msg.Serialize())
     return err
 }
 
 func (c *Client) SendInterested() error {
-    msg := &message.Message{Id: message.IdInterested}
+    msg := message.Message{Id: message.IdInterested}
     _, err := c.Conn.Write(msg.Serialize())
     return err
 }

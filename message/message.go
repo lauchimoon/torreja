@@ -42,8 +42,7 @@ func Read(r io.Reader) (*Message, error) {
     if err != nil {
         return nil, err
     }
-
-    messageLen := binary.BigEndian.Uint32(lengthBuf[0:4])
+    messageLen := binary.BigEndian.Uint32(lengthBuf)
     if messageLen == 0 {
         return nil, errors.New("length of message cannot be 0")
     }
@@ -109,7 +108,7 @@ func FormatRequest(idx int, requestedBytes, blockSize int64) *Message {
     binary.BigEndian.PutUint32(buf[4:8], uint32(requestedBytes))
     binary.BigEndian.PutUint32(buf[8:12], uint32(blockSize))
     return &Message{
-        Id: IdHave,
+        Id: IdRequest,
         Payload: buf,
     }
 }
