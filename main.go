@@ -24,4 +24,6 @@ func main() {
     fmt.Printf("Pieces: %v\n", torr.Info.Pieces)
     fmt.Println("Private:", torr.Info.Private)
     fmt.Println("Files:", torr.Info.Files)
+
+    fmt.Println(torr.BuildTrackerURL("something1something1", "6881"))
 }
