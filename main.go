@@ -31,8 +31,13 @@ func main() {
     }
     fmt.Println("Peers found:", peerList)
 
-    _, err = client.New(peerList[0], "something1something1", torr.InfoHash)
-    if err != nil {
-        panic(err)
+    i := 0
+    fmt.Printf("Inspect peer %s\n", peerList[i])
+    c, err := client.New(peerList[i], "something1something1", torr.InfoHash)
+    for err != nil {
+        i++
+        fmt.Printf("Inspect peer %s\n", peerList[i])
+        c, err = client.New(peerList[i], "something1something1", torr.InfoHash)
     }
+    fmt.Println(peerList[i], c)
 }
