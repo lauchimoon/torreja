@@ -1,6 +1,7 @@
 package torrent
 
 import (
+    "crypto/sha1"
     "encoding/hex"
     "errors"
     "os"
@@ -32,6 +33,7 @@ type info struct {
 
 type Metainfo struct {
     Info info
+    InfoHash hash
     Announce string
     AnnounceList []string
     CreationDate int64
@@ -78,6 +80,12 @@ func New(torrentFilePath string) (*Metainfo, error) {
         return nil, err
     }
     metainfo.Info = data
+
+    iHash, err := getInfoHash(decoded)
+    if err != nil {
+        return nil, err
+    }
+    metainfo.InfoHash = iHash
 
     return &metainfo, nil
 }
@@ -252,4 +260,14 @@ func getMultiFile(data map[string]any) ([]file, error) {
     }
 
     return files, nil
+}
+
+func getInfoHash(data map[string]any) (hash, error) {
+    buf := bencode.Encode(data["info"])
+    rawBytes := sha1.Sum([]byte(buf))
+    h := strings.Builder{}
+    for _, b := range rawBytes {
+        h.WriteByte(b)
+    }
+    return hash(h.String()), nil
 }
