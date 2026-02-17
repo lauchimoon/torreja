@@ -1,6 +1,7 @@
 package bencode
 
 import (
+    "sort"
     "strings"
     "strconv"
 )
@@ -55,9 +56,15 @@ func (e *encoder) encodeList(l []any) {
 
 func (e *encoder) encodeDict(d map[string]any) {
     e.builder.WriteByte('d')
-    for k, v := range d {
-        e.encodeType(k)
-        e.encodeType(v)
+    keys := []string{}
+    for k := range d {
+        keys = append(keys, k)
+    }
+    sort.Strings(keys)
+
+    for _, k := range keys {
+        e.encodeString(k)
+        e.encodeType(d[k])
     }
     e.builder.WriteByte('e')
 }
