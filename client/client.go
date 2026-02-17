@@ -82,18 +82,29 @@ func receiveBitfield(conn net.Conn) (bf.Bitfield, error) {
 }
 
 func (c *Client) Read() (*message.Message, error) {
-    return nil, nil
+    return message.Read(c.Conn)
 }
 
-func (c *Client) SendUnchoked() {
+func (c *Client) SendUnchoked() error {
+    msg := &message.Message{Id: message.IdUnchoke}
+    _, err := c.Conn.Write(msg.Serialize())
+    return err
 }
 
-func (c *Client) SendInterested() {
+func (c *Client) SendInterested() error {
+    msg := &message.Message{Id: message.IdInterested}
+    _, err := c.Conn.Write(msg.Serialize())
+    return err
 }
 
-func (c *Client) SendHave(idx int) {
+func (c *Client) SendHave(idx int) error {
+    msg := message.FormatHave(idx)
+    _, err := c.Conn.Write(msg.Serialize())
+    return err
 }
 
-func (c *Client) SendRequest(idx, requestedBytes, blockSize int) error {
-    return nil
+func (c *Client) SendRequest(idx int, requestedBytes, blockSize int64) error {
+    msg := message.FormatRequest(idx, requestedBytes, blockSize)
+    _, err := c.Conn.Write(msg.Serialize())
+    return err
 }

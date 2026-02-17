@@ -71,7 +71,7 @@ func ParseHave(m *Message) (int, error) {
     return idx, nil
 }
 
-func ParsePiece(idx int, buf []byte, m *Message) (int, error) {
+func ParsePiece(idx int, buf []byte, m *Message) (int64, error) {
     if m.Id != IdPiece {
         return 0, fmt.Errorf("expected piece (id %d), got %d", IdPiece, m.Id)
     }
@@ -91,5 +91,25 @@ func ParsePiece(idx int, buf []byte, m *Message) (int, error) {
         return 0, fmt.Errorf("data is too long")
     }
     copy(buf[begin:], data)
-    return len(data), nil
+    return int64(len(data)), nil
+}
+
+func FormatHave(idx int) *Message {
+    buf := make([]byte, 4)
+    binary.BigEndian.PutUint32(buf, uint32(idx))
+    return &Message{
+        Id: IdHave,
+        Payload: buf,
+    }
+}
+
+func FormatRequest(idx int, requestedBytes, blockSize int64) *Message {
+    buf := make([]byte, 12)
+    binary.BigEndian.PutUint32(buf[0:4], uint32(idx))
+    binary.BigEndian.PutUint32(buf[4:8], uint32(requestedBytes))
+    binary.BigEndian.PutUint32(buf[8:12], uint32(blockSize))
+    return &Message{
+        Id: IdHave,
+        Payload: buf,
+    }
 }

@@ -20,7 +20,7 @@ type Torrent struct {
     PeerId      string
     InfoHash    [20]byte
     PieceHashes [][20]byte
-    PieceLength int
+    PieceLength int64
     Length      int
     Name        string
 }
@@ -28,7 +28,7 @@ type Torrent struct {
 type pieceWork struct {
     idx    int
     hash   [20]byte
-    length int
+    length int64
 }
 
 type pieceResult struct {
@@ -40,9 +40,9 @@ type pieceProgress struct {
     idx        int
     client     *client.Client
     buf        []byte
-    downloaded int
-    requested  int
-    pipelined  int
+    downloaded int64
+    requested  int64
+    pipelined  int64
 }
 
 func (t *Torrent) Download() ([]byte, error) {
@@ -70,13 +70,13 @@ func (t *Torrent) Download() ([]byte, error) {
     return buf, nil
 }
 
-func (t *Torrent) calculatePieceSize(idx int) int {
+func (t *Torrent) calculatePieceSize(idx int) int64 {
     begin, end := t.calculateBoundsForPiece(idx)
     return end - begin
 }
 
-func (t *Torrent) calculateBoundsForPiece(idx int) (int, int) {
-    begin := idx*t.PieceLength
+func (t *Torrent) calculateBoundsForPiece(idx int) (int64, int64) {
+    begin := int64(idx)*t.PieceLength
     end := begin + t.PieceLength
     if end > t.PieceLength {
         end = t.PieceLength
@@ -101,7 +101,6 @@ func (t *Torrent) startDownload(peer peers.Peer, workQueue chan *pieceWork, resu
             workQueue <- worker
             continue
         }
-
         buf, err := attemptDownload(c, worker)
         if err != nil {
             log.Println("exiting:", err)
@@ -114,7 +113,6 @@ func (t *Torrent) startDownload(peer peers.Peer, workQueue chan *pieceWork, resu
             workQueue <- worker
             continue
         }
-
         c.SendHave(worker.idx)
         result <- &pieceResult{worker.idx, buf}
     }
@@ -133,7 +131,7 @@ func attemptDownload(c *client.Client, worker *pieceWork) ([]byte, error) {
     for state.downloaded < worker.length {
         if !state.client.Choked {
             for state.pipelined < MaxPipelined && state.requested < worker.length {
-                blockSize := MaxBlockSize
+                blockSize := int64(MaxBlockSize)
                 if worker.length - state.requested < blockSize {
                     blockSize = worker.length - state.requested
                 }
