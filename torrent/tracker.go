@@ -59,7 +59,23 @@ func (m *Metainfo) RequestPeers(peerId string, port int64) ([]peers.Peer, error)
     if err != nil {
         return nil, err
     }
+    err = checkFailure(decoded)
+    if err != nil {
+        return nil, err
+    }
     return parsePeers(decoded)
+}
+
+func checkFailure(decoded map[string]any) error {
+    failureReason, ok := decoded["failure reason"]
+    if !ok {
+        return nil
+    }
+    reasonString, ok := failureReason.(string)
+    if !ok {
+        return errors.New("could not parse failure reason as string")
+    }
+    return errors.New(reasonString)
 }
 
 func parsePeers(decoded map[string]any) ([]peers.Peer, error) {
