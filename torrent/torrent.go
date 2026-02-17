@@ -7,6 +7,7 @@ import (
     "strings"
 
     "github.com/lauchimoon/torreja/bencode"
+    "github.com/lauchimoon/torreja/p2p"
 )
 
 const (
@@ -86,6 +87,40 @@ func New(torrentFilePath string) (*Metainfo, error) {
     metainfo.InfoHash = iHash
 
     return &metainfo, nil
+}
+
+func (t *Metainfo) Download(outPath string) error {
+    peerId := "torrejadownloader123"
+    peers, err := t.RequestPeers(peerId, 6881)
+    if err != nil {
+        return err
+    }
+
+    torrent := p2p.Torrent{
+        Peers: peers,
+        PeerId: peerId,
+        InfoHash: t.InfoHash,
+        PieceHashes: t.Info.Pieces,
+        PieceLength: t.Info.PieceLength,
+        Length: t.getTotalLength(),
+        Name: t.Info.Name,
+    }
+
+    fileContents, err := torrent.Download()
+    if err != nil {
+        return err
+    }
+
+    f, err := os.Create(outPath)
+    if err != nil {
+        return err
+    }
+    defer f.Close()
+    _, err = f.Write(fileContents)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 func getField[T any](decoded map[string]any, field string, target *T) {

@@ -4,6 +4,7 @@ import (
     "bytes"
     "crypto/sha1"
     "fmt"
+    "runtime"
     "log"
     "time"
 
@@ -64,6 +65,10 @@ func (t *Torrent) Download() ([]byte, error) {
         begin, end := t.calculateBoundsForPiece(res.idx)
         copy(buf[begin:end], res.buf)
         donePieces++
+
+        percent := float64(donePieces)/float64(len(t.PieceHashes))*100.0
+        numPeers := runtime.NumGoroutine() - 1
+        log.Printf("(%0.2f%%) downloaded piece %#d from %#d peers", percent, res.idx, numPeers)
     }
     close(workQueue)
 
