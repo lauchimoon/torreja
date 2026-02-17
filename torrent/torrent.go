@@ -2,7 +2,6 @@ package torrent
 
 import (
     "crypto/sha1"
-    "encoding/hex"
     "errors"
     "os"
     "strings"
@@ -21,7 +20,7 @@ type file struct {
     Path string
 }
 
-type hash string
+type hash [20]byte
 
 type info struct {
     PieceLength int64
@@ -179,8 +178,11 @@ func parsePieces(pieces any) ([]hash, error) {
 
     hashes := []hash{}
     for i := 0; i < piecesSize; i += 20 {
-        chunk := piecesSlice[i:i+20]
-        hashes = append(hashes, hash(hex.EncodeToString(chunk)))
+        var chunk [20]byte
+        for j := 0; j < 20; j++ {
+            chunk[j] = piecesSlice[i+j]
+        }
+        hashes = append(hashes, chunk)
     }
     return hashes, nil
 }
@@ -265,10 +267,6 @@ func getMultiFile(data map[string]any) ([]file, error) {
 
 func getInfoHash(data map[string]any) (hash, error) {
     buf := bencode.Encode(data["info"])
-    rawBytes := sha1.Sum([]byte(buf))
-    h := strings.Builder{}
-    for _, b := range rawBytes {
-        h.WriteByte(b)
-    }
-    return hash(h.String()), nil
+    h := sha1.Sum([]byte(buf))
+    return h, nil
 }
