@@ -21,9 +21,12 @@ func main() {
 
     fmt.Printf("\nName: '%s'\n", torr.Info.Name)
     fmt.Println("Piece length:", torr.Info.PieceLength)
-    fmt.Printf("Pieces: %v\n", torr.Info.Pieces)
     fmt.Println("Private:", torr.Info.Private)
     fmt.Println("Files:", torr.Info.Files)
 
-    fmt.Println(torr.BuildTrackerURL("something1something1", "6881"))
+    peerList, err := torr.RequestPeers("something1something1", 6881)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println("Peers found:", peerList)
 }
