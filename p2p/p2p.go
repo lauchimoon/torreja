@@ -21,7 +21,7 @@ type Torrent struct {
     InfoHash    [20]byte
     PieceHashes [][20]byte
     PieceLength int64
-    Length      int
+    Length      int64
     Name        string
 }
 
