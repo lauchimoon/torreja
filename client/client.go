@@ -80,3 +80,20 @@ func receiveBitfield(conn net.Conn) (bf.Bitfield, error) {
     }
     return msg.Payload, nil
 }
+
+func (c *Client) Read() (*message.Message, error) {
+    return nil, nil
+}
+
+func (c *Client) SendUnchoked() {
+}
+
+func (c *Client) SendInterested() {
+}
+
+func (c *Client) SendHave(idx int) {
+}
+
+func (c *Client) SendRequest(idx, requestedBytes, blockSize int) error {
+    return nil
+}
