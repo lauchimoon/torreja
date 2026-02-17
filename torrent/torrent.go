@@ -20,11 +20,9 @@ type file struct {
     Path string
 }
 
-type hash [20]byte
-
 type info struct {
     PieceLength int64
-    Pieces []hash
+    Pieces [][20]byte
     Private int64
 
     Name string
@@ -33,7 +31,7 @@ type info struct {
 
 type Metainfo struct {
     Info info
-    InfoHash hash
+    InfoHash [20]byte
     Announce string
     AnnounceList []string
     CreationDate int64
@@ -165,7 +163,7 @@ func getInfo(decoded map[string]any) (info, error) {
     return i, nil
 }
 
-func parsePieces(pieces any) ([]hash, error) {
+func parsePieces(pieces any) ([][20]byte, error) {
     str, ok := pieces.(string)
     if !ok {
         return nil, errors.New("could not parse pieces as a string")
@@ -176,7 +174,7 @@ func parsePieces(pieces any) ([]hash, error) {
         return nil, errors.New("size of pieces string must be a multiple of 20")
     }
 
-    hashes := []hash{}
+    hashes := [][20]byte{}
     for i := 0; i < piecesSize; i += 20 {
         var chunk [20]byte
         for j := 0; j < 20; j++ {
@@ -265,7 +263,7 @@ func getMultiFile(data map[string]any) ([]file, error) {
     return files, nil
 }
 
-func getInfoHash(data map[string]any) (hash, error) {
+func getInfoHash(data map[string]any) ([20]byte, error) {
     buf := bencode.Encode(data["info"])
     h := sha1.Sum([]byte(buf))
     return h, nil
