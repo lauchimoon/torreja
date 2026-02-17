@@ -83,8 +83,8 @@ func (t *Torrent) calculatePieceSize(idx int) int64 {
 func (t *Torrent) calculateBoundsForPiece(idx int) (int64, int64) {
     begin := int64(idx)*t.PieceLength
     end := begin + t.PieceLength
-    if end > t.PieceLength {
-        end = t.PieceLength
+    if end > t.Length {
+        end = t.Length
     }
     return begin, end
 }
